@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Ensure we have arguments
+if [ $# -eq 0 ]; then
+    echo "Usage: ./run [command]"
+    echo "Example: ./run php artisan migrate"
+    echo "Example: ./run composer install"
+    echo "Example: ./run npm run dev"
+    exit 1
+fi
+
+# Pass the command directly to the 'app' container
+docker compose exec app "$@"
