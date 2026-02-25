@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('score_boards', function (Blueprint $table) {
+        Schema::create('scores', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('round')->nullable();
             $table->foreignId('game_id')->constrained('games', 'id')->cascadeOnDelete();
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('score_boards');
+        Schema::dropIfExists('scores');
     }
 };

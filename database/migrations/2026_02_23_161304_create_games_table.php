@@ -25,6 +25,8 @@ return new class extends Migration
             $table->dateTime('started_at')->nullable();
             $table->dateTime('finished_at')->nullable();
             $table->timestamps();
+
+            $table->unique(['slug', 'manager_id']);
         });
     }
 

@@ -32,7 +32,7 @@ new class extends Component
 
         $totalGame = Game::query()
             ->whereToday('created_at')
-            ->where('user_id', auth()->id())
+            ->where('manager_id', auth()->id())
             ->count();
 
         $game = Game::query()
@@ -49,7 +49,7 @@ new class extends Component
             $memberName = trim($member);
             return Member::query()->updateOrCreate([
                 'name' => $memberName,
-                'user_id' => auth()->id(),
+                'added_by' => auth()->id(),
             ]);
         });
 

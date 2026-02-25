@@ -9,7 +9,7 @@
     <div class="flex flex-col gap-4">
         @forelse($games as $game)
             <div class="border rounded p-4">
-                <div>{{$game->name}}</div>
+                <div><flux:link href="{{route('game.show', $game->slug)}}">{{$game->name}}</flux:link></div>
                 <div>{{$game->members->pluck('name')->implode(', ')}}</div>
             </div>
         @empty
