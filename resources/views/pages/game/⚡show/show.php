@@ -3,6 +3,7 @@
 use App\Models\Game;
 use App\Models\Score;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -11,6 +12,7 @@ new class extends Component
     public Game $game;
 
     public array $bids = [];
+
     public array $actuals = [];
 
     public function mount(string $slug): void
@@ -26,6 +28,7 @@ new class extends Component
     public function totalRounds(): int
     {
         $memberCount = $this->game->members->count();
+
         return $memberCount > 0 ? floor(60 / $memberCount) : 0;
     }
 
@@ -38,8 +41,13 @@ new class extends Component
     #[Computed]
     public function isCurrentRoundComplete(): bool
     {
-        if ($this->latestRound === 0) return true;
-        return $this->game->scores->where('round', $this->latestRound)->whereNull('actual_win')->isEmpty();
+        if ($this->latestRound === 0) {
+            return true;
+        }
+
+        return $this->game->scores
+            ->where('round', $this->latestRound)
+            ->whereNull('actual_win')->isEmpty();
     }
 
     public function openBidModal(): void
@@ -60,6 +68,15 @@ new class extends Component
         ]);
 
         $round = $this->isCurrentRoundComplete ? ($this->latestRound + 1) : $this->latestRound;
+
+        $totalBid = collect($this->bids)->sum();
+        if ($round == $totalBid) {
+            throw ValidationException::withMessages(['bids' => 'Total bids must not be equal to round number.']);
+        }
+
+        if ($totalBid < $round - 1) {
+            throw ValidationException::withMessages(['bids' => 'Total bids must not be less than round - 1.']);
+        }
 
         foreach ($this->game->members as $member) {
             Score::query()->updateOrCreate([
@@ -94,15 +111,23 @@ new class extends Component
 
         $round = $this->latestRound;
 
+        $totalWins = collect($this->actuals)->sum();
+        if ($round != $totalWins) {
+            throw ValidationException::withMessages(['actuals' => 'Total wins must be equal to round number.']);
+        }
+
         foreach ($this->game->members as $member) {
-            $target = $this->game->scores->where('round', $round)->where('member_id', $member->id)->first()->target_win ?? 0;
+            $target = $this->game->scores
+                ->where('round', $round)
+                ->where('member_id', $member->id)
+                ->first()->target_win ?? 0;
+
             $actual = Arr::get($this->actuals, $member->id, 0);
 
-            $point = 0;
             if ($target == $actual) {
                 $point = 20 + ($actual * 10);
             } else {
-                $point = abs($target - $actual) * (- 10);
+                $point = abs($target - $actual) * (-10);
             }
 
             Score::query()->updateOrCreate([
@@ -115,7 +140,6 @@ new class extends Component
             ]);
         }
 
-        // reload relationships
         $this->game->load('scores');
     }
 };

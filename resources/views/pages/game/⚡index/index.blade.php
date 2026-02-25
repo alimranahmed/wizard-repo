@@ -25,11 +25,11 @@
             <flux:heading size="lg">Start a Game</flux:heading>
 
             @if ($errors->any())
-            <div class="text-red-500 text-sm space-y-1">
-                @foreach ($errors->all() as $error)
-                <div>{{ $error }}</div>
-                @endforeach
-            </div>
+                <div class="text-red-500 text-sm space-y-1">
+                    @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                    @endforeach
+                </div>
             @endif
 
             <div>Members</div>
