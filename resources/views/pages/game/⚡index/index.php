@@ -47,6 +47,7 @@ new class extends Component
 
         $members = collect($members)->map(function (string $member) {
             $memberName = trim($member);
+
             return Member::query()->updateOrCreate([
                 'name' => $memberName,
                 'added_by' => auth()->id(),
@@ -58,6 +59,7 @@ new class extends Component
         $this->games = $this->getGames();
 
         Flux::modal('start-game')->close();
+        $this->redirectRoute('game.show', ['slug' => $game->slug], navigate: true);
     }
 
     private function getGames(): Collection

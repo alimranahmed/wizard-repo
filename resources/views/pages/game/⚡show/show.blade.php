@@ -5,15 +5,15 @@
         <div class="flex gap-2">
             @if($this->isCurrentRoundComplete)
                 <flux:modal.trigger name="bid-modal">
-                    <flux:button wire:click="openBidModal">Bid (Round {{ $this->latestRound + 1 }})</flux:button>
+                    <flux:button wire:click="openBidModal()">Bid (Round {{ $this->latestRound + 1 }})</flux:button>
                 </flux:modal.trigger>
             @else
                 <flux:modal.trigger name="bid-modal">
-                    <flux:button variant="subtle" wire:click="openBidModal">Edit Bids</flux:button>
+                    <flux:button variant="subtle" wire:click="openBidModal()">Edit Bids</flux:button>
                 </flux:modal.trigger>
 
                 <flux:modal.trigger name="end-round-modal">
-                    <flux:button variant="primary" wire:click="openEndRoundModal">End Round {{ $this->latestRound }}
+                    <flux:button variant="primary" wire:click="openEndRoundModal()">End Round {{ $this->latestRound }}
                     </flux:button>
                 </flux:modal.trigger>
             @endif
@@ -24,19 +24,6 @@
     <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
         <table class="w-full text-sm text-left">
             <thead class="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
-                @php
-                    $rounds = $game->scores->groupBy('round')->sortKeys();
-                    $cumulativeScores = [];
-                    foreach($game->members as $member) {
-                        $cumulativeScores[$member->id] = 0;
-                        foreach ($rounds as $scores) {
-                            $score = $scores->firstWhere('member_id', $member->id);
-                            if ($score && $score->actual_win !== null) {
-                                $cumulativeScores[$member->id] += $score->point;
-                            }
-                        }
-                    }
-                @endphp
                 <tr>
                     <th class="w-0.5"></th>
                     @foreach($game->members as $member)
@@ -44,7 +31,7 @@
                             <div>
                                 {{ $member->initials() }}
                                 <div class="md:inline text-xs md:text-sm text-zinc-900 dark:text-zinc-100">
-                                    ({{$cumulativeScores[$member->id] }})
+                                    ({{$this->currentResult[$member->id] }})
                                 </div>
                             </div>
                         </th>
@@ -54,7 +41,7 @@
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700 text-xs md:text-sm">
                 @for($roundNumber = 1; $roundNumber <= $this->totalRounds; $roundNumber++)
                     @php
-                        $scores = $rounds->get($roundNumber, collect());
+                        $scores = $this->rounds->get($roundNumber, collect());
                     @endphp
                     <tr
                         class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 {{ $this->latestRound == $roundNumber ? 'bg-zinc-50 dark:bg-zinc-800/80' : '' }}">
@@ -93,6 +80,21 @@
                     </tr>
                 @endfor
             </tbody>
+            <thead class="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+                <tr>
+                    <th class="w-0.5"></th>
+                    @foreach($game->members as $member)
+                        <th class="px-3 py-2 font-semibold text-zinc-900 dark:text-zinc-100 text-center border-l border-zinc-200 dark:border-zinc-700 flex-1 w-48 align-top">
+                            <div>
+                                {{ $member->initials() }}
+                                <div class="md:inline text-xs md:text-sm text-zinc-900 dark:text-zinc-100">
+                                    ({{$this->currentResult[$member->id] }})
+                                </div>
+                            </div>
+                        </th>
+                    @endforeach
+                </tr>
+            </thead>
         </table>
     </div>
 
@@ -100,11 +102,10 @@
     <flux:modal name="bid-modal" flyout>
         <div class="space-y-6">
             <flux:heading size="lg">
-                {{ $this->isCurrentRoundComplete ? "Round ".($this->latestRound + 1)." Bids" : 'Edit Bids for Round ' .
-                $this->latestRound }}
+                {{ $this->isCurrentRoundComplete ? "Bidding(Round: ".($this->latestRound + 1).")" : "Edit Bids(Round: {$this->latestRound})" }}
             </flux:heading>
 
-            <form wire:submit.prevent="saveBids" class="space-y-4">
+            <form wire:submit.prevent="saveBids()" class="space-y-4">
 
                 @if ($errors->any())
                     <div class="text-red-500 text-sm space-y-1">
@@ -116,13 +117,11 @@
 
                 @foreach($game->members as $member)
                     <div class="flex gap-2 justify-between items-center">
-                        <label class="whitespace-nowrap">{{ $member->name }}'s Bid</label>
-                        <div class="w-full">
-                            <flux:input type="number"
-                                        min="0"
-                                        wire:model="bids.{{ $member->id }}"
-                                        required />
-                        </div>
+                        <flux:input type="number"
+                                    label="{{ $member->name }}'s Bid"
+                                    min="0"
+                                    wire:model="bids.{{ $member->id }}"
+                                    required />
                     </div>
                 @endforeach
 
@@ -135,10 +134,10 @@
 
     <flux:modal name="end-round-modal" flyout>
         <div class="space-y-6">
-            <flux:heading size="lg">End Round {{ $this->latestRound }}</flux:heading>
+            <flux:heading size="lg">Results(Round: {{ $this->latestRound }})</flux:heading>
             <flux:subheading>Enter the actual wins for each player.</flux:subheading>
 
-            <form wire:submit.prevent="saveActuals" class="space-y-4">
+            <form wire:submit.prevent="saveActualWins()" class="space-y-4">
 
                 @if ($errors->any())
                     <div class="text-red-500 text-sm space-y-1">
@@ -156,7 +155,7 @@
                             ->first()?->target_win ?? 0;
                     @endphp
                     <flux:input type="number" min="0" label="{{ $member->name }} won(Bid: {{ $target }})"
-                        wire:model="actuals.{{ $member->id }}" required />
+                        wire:model="actual_wins.{{ $member->id }}" required />
                 @endforeach
 
                 <div class="flex justify-end pt-4">

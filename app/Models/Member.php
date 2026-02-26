@@ -24,6 +24,7 @@ class Member extends Model
         if (strlen($initials) < 2) {
             return Str::substr($this->name, 0, 2);
         }
+
         return $initials;
     }
 }

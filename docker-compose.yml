@@ -31,6 +31,7 @@ services:
     image: mysql:8.4
     container_name: wizard_game_db
     restart: unless-stopped
+    ports: ["3309:3306"]
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-wizard_board}
       MYSQL_USER: ${DB_USERNAME:-wizard_user}
