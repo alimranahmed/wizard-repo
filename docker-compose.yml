@@ -32,7 +32,7 @@ services:
     container_name: wizard_game_db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-wizard_game}
+      MYSQL_DATABASE: ${DB_DATABASE:-wizard_board}
       MYSQL_USER: ${DB_USERNAME:-wizard_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
