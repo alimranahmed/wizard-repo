@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('games', function (Blueprint $table) {
             $table->id();
+            $table->string('sharable_id', 8)->unique()->nullable();
             $table->string('name');
             $table->string('status')->nullable();
             $table->string('slug')->unique();

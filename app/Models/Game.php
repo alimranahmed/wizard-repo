@@ -16,7 +16,9 @@ class Game extends Model
 
     public function members(): BelongsToMany
     {
-        return $this->belongsToMany(Member::class, 'game_member');
+        return $this->belongsToMany(Member::class, 'game_member')
+            ->withPivot('order')
+            ->orderByPivot('order');
     }
 
     public function scores(): HasMany

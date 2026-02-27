@@ -34,7 +34,11 @@ class CreateGame
             ]);
         });
 
-        $game->members()->attach($members->pluck('id'));
+        $game->members()->attach(
+            $members->values()->mapWithKeys(fn ($member, $index) => [
+                $member->id => ['order' => $index + 1],
+            ])
+        );
 
         return $game;
     }

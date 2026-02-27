@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('game_member', function (Blueprint $table) {
             $table->id();
-            $table->string('sharable_id', 8)->unique()->nullable();
             $table->foreignId('game_id')->constrained('games', 'id')->cascadeOnDelete();
             $table->foreignId('member_id')->constrained('members', 'id')->cascadeOnDelete();
             $table->integer('order')->nullable();
