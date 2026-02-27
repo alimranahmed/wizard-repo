@@ -164,5 +164,4 @@ new class extends Component
 
         return $cumulativePoints;
     }
-
 };

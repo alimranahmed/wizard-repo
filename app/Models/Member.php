@@ -22,7 +22,7 @@ class Member extends Model
             ->implode('');
 
         if (strlen($initials) < 2) {
-            return Str::substr($this->name, 0, 2);
+            return Str::substr($this->name, 0, 3);
         }
 
         return $initials;

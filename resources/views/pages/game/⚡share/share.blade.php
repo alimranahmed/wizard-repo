@@ -3,7 +3,7 @@
         <flux:heading>{{ $game->name }}</flux:heading>
         <flux:badge color="zinc">View Only</flux:badge>
     </div>
-    
+
     <div class="text-zinc-400 text-sm mb-3">
         {{$game->started_at->format('jS M Y h:i A')}} - {{$game->finished_at?->format('h:i A') ?: 'in progress'}}
     </div>
