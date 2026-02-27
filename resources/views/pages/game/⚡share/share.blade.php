@@ -3,9 +3,12 @@
         <flux:heading>{{ $game->name }}</flux:heading>
         <flux:badge color="zinc">View Only</flux:badge>
     </div>
-
+    
+    <div class="text-zinc-400 text-sm mb-3">
+        {{$game->started_at->format('jS M Y h:i A')}} - {{$game->finished_at?->format('h:i A') ?: 'in progress'}}
+    </div>
     <!-- Scoreboard -->
-    <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
+    <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg" wire:poll.visible.7s>
         <table class="w-full text-sm text-left">
             <thead class="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
                 <tr>

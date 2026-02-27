@@ -14,6 +14,11 @@ class Game extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'started_at' => 'datetime',
+        'finished_at' => 'datetime',
+    ];
+
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(Member::class, 'game_member')

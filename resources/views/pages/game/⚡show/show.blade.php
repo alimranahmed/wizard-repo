@@ -3,26 +3,27 @@
         <flux:heading>{{ $game->name }}</flux:heading>
 
         <div class="flex gap-2">
-            @if($this->totalRounds > $this->latestRound)
-                @if($this->isCurrentRoundComplete)
+            @if($this->latestRound + 1 <= $this->totalRounds && $this->isCurrentRoundComplete)
                     <flux:modal.trigger name="bid-modal">
                         <flux:button wire:click="openBidModal()">Bid (Round {{ $this->latestRound + 1 }})</flux:button>
                     </flux:modal.trigger>
-                @else
-                    <flux:modal.trigger name="bid-modal">
-                        <flux:button variant="subtle" wire:click="openBidModal()">Edit Bids</flux:button>
-                    </flux:modal.trigger>
+            @elseif($this->latestRound + 1 <= $this->totalRounds || !$this->isCurrentRoundComplete)
+                <flux:modal.trigger name="bid-modal">
+                    <flux:button variant="subtle" wire:click="openBidModal()">Edit Bids</flux:button>
+                </flux:modal.trigger>
 
-                    <flux:modal.trigger name="end-round-modal">
-                        <flux:button variant="primary" wire:click="openEndRoundModal()">End Round {{ $this->latestRound }}
-                        </flux:button>
-                    </flux:modal.trigger>
-                @endif
+                <flux:modal.trigger name="end-round-modal">
+                    <flux:button variant="primary" wire:click="openEndRoundModal()">End Round {{ $this->latestRound }}
+                    </flux:button>
+                </flux:modal.trigger>
             @endif
         </div>
     </div>
 
     <!-- The Scoreboard Table -->
+    <div class="text-zinc-400 text-sm mb-3">
+        {{$game->started_at->format('jS M Y h:i A')}} - {{$game->finished_at?->format('h:i A') ?: 'in progress'}}
+    </div>
     <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
         <table class="w-full text-sm text-left">
             <thead class="bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">

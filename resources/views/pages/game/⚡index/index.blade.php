@@ -26,6 +26,9 @@
             <div class="flex items-center justify-between">
                 <div>
                     <flux:link href="{{ route('game.show', $game->slug) }}" wire:navigate>{{ $game->name }}</flux:link>
+                    <div class="text-zinc-400 text-sm my-1">
+                        {{$game->started_at->format('jS M Y h:i A')}} - {{$game->finished_at?->toTimeString() ?: 'in progress'}}
+                    </div>
                     <div class="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
                         {{ $game->members->pluck('name')->implode(', ') }}
                     </div>

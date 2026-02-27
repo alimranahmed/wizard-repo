@@ -95,6 +95,7 @@ new class extends Component
 
         $this->game->load('scores');
         Flux::modal('bid-modal')->close();
+        $this->redirectRoute('game.show', ['slug' => $this->game->slug], navigate: true);
     }
 
     public function openEndRoundModal(): void
