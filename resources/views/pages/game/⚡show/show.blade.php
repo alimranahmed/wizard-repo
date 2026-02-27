@@ -107,14 +107,6 @@
 
             <form wire:submit.prevent="saveBids()" class="space-y-4">
 
-                @if ($errors->any())
-                    <div class="text-red-500 text-sm space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <div>{{ $error }}</div>
-                        @endforeach
-                    </div>
-                @endif
-
                 @foreach($game->members as $member)
                     <div class="flex gap-2 justify-between items-center">
                         <flux:input type="number"
@@ -138,14 +130,6 @@
             <flux:subheading>Enter the actual wins for each player.</flux:subheading>
 
             <form wire:submit.prevent="saveActualWins()" class="space-y-4">
-
-                @if ($errors->any())
-                    <div class="text-red-500 text-sm space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <div>{{ $error }}</div>
-                        @endforeach
-                    </div>
-                @endif
 
                 @foreach($game->members as $member)
                     @php

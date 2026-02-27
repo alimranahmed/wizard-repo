@@ -1,8 +1,7 @@
 <?php
 
-use App\Enums\GameStatus;
+use App\Actions\Game\CreateGame;
 use App\Models\Game;
-use App\Models\Member;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
@@ -30,31 +29,7 @@ new class extends Component
 
         $this->validate();
 
-        $totalGame = Game::query()
-            ->whereToday('created_at')
-            ->where('manager_id', auth()->id())
-            ->count();
-
-        $game = Game::query()
-            ->create([
-                'manager_id' => auth()->id(),
-                'password' => Hash::make(Arr::get($this->game, 'password', 'secret')),
-                'name' => $name = today()->format('jS M Y').'(Game '.($totalGame + 1).')',
-                'slug' => Arr::get($this->game, 'slug') ?: Str::slug($name),
-                'status' => GameStatus::Progress,
-                'started_at' => now(),
-            ]);
-
-        $members = collect($members)->map(function (string $member) {
-            $memberName = trim($member);
-
-            return Member::query()->updateOrCreate([
-                'name' => $memberName,
-                'added_by' => auth()->id(),
-            ]);
-        });
-
-        $game->members()->attach($members->pluck('id'));
+        $game = (new CreateGame)->handle(auth()->id(), $members, $this->game);
 
         $this->games = $this->getGames();
 

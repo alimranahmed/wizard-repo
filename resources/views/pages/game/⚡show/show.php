@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\GameStatus;
+use App\Actions\Game\SaveActualWins;
+use App\Actions\Game\SaveBids;
+use App\DTOs\Game\SaveActualWinsData;
+use App\DTOs\Game\SaveBidsData;
 use App\Models\Game;
-use App\Models\Score;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -91,27 +91,7 @@ new class extends Component
             throw ValidationException::withMessages(['bids' => 'Total bids must not be less than round - 1.']);
         }
 
-        DB::transaction(function () use ($round) {
-            foreach ($this->game->members as $member) {
-                Score::query()->updateOrCreate([
-                    'game_id' => $this->game->id,
-                    'round' => $round,
-                    'member_id' => $member->id,
-                ], [
-                    'target_win' => Arr::get($this->bids, $member->id, 0),
-                    'actual_win' => null,
-                    'point' => 0,
-                ]);
-            }
-            if ($round === $this->totalRounds) {
-                Game::query()
-                    ->where('id', $this->game->id)
-                    ->update([
-                        'status' => GameStatus::Finished,
-                        'finished_at' => now(),
-                    ]);
-            }
-        });
+        (new SaveBids)->handle(new SaveBidsData($this->game, $round, $this->bids));
 
         $this->game->load('scores');
         Flux::modal('bid-modal')->close();
@@ -139,29 +119,7 @@ new class extends Component
             throw ValidationException::withMessages(['actual_wins' => 'Total wins must be equal to round number.']);
         }
 
-        // Pre-fetch all scores for this round to avoid N+1 queries
-        $scores = $this->game->scores
-            ->where('round', $round)
-            ->keyBy('member_id');
-
-        DB::transaction(function () use ($round, $scores) {
-            foreach ($this->game->members as $member) {
-                $score = $scores->get($member->id);
-                $target = $score?->target_win ?? 0;
-                $actual = Arr::get($this->actual_wins, $member->id, 0);
-
-                $point = $this->calculatePoint($target, $actual);
-
-                Score::query()->updateOrCreate([
-                    'game_id' => $this->game->id,
-                    'round' => $round,
-                    'member_id' => $member->id,
-                ], [
-                    'actual_win' => $actual,
-                    'point' => $point,
-                ]);
-            }
-        });
+        (new SaveActualWins)->handle(new SaveActualWinsData($this->game, $round, $this->actual_wins));
 
         $this->game->load('scores');
         Flux::modal('end-round-modal')->close();
@@ -190,12 +148,4 @@ new class extends Component
         return $cumulativePoints;
     }
 
-    private function calculatePoint(int $target, int $actual): int
-    {
-        if ($target === $actual) {
-            return 20 + ($actual * 10);
-        }
-
-        return abs($target - $actual) * (-10);
-    }
 };
